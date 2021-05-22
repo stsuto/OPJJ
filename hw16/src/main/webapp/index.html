@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Image gallery</title>
+
+	<style>
+		
+		body {
+			background-color: #ffff66;
+		}
+		
+		h1, h2, h3, h4, h5, h6 {
+		    font-family: 'Corben', Georgia, Times, serif;
+		    font-style: oblique;
+			color: darkgreen;
+		}
+		
+		p, div {
+		    font-family: 'Nobile', Helvetica, Arial, sans-serif;
+		    
+		}   
+		   
+		.tag {
+			  display: inline-block;
+			  padding: 15px 25px;
+			  font-size: 24px;
+			  cursor: pointer;
+			  text-align: center;
+			  text-decoration: none;
+			  outline: none;
+			  color: #fff;
+			  background-color: #4CAF50;
+			  border: none;
+			  border-radius: 15px;
+			  box-shadow: 0 9px #999;
+			}
+
+		.tag:hover {background-color: #3e8e41}
+		
+		.tag:active {
+		  background-color: #3e8e41;
+		  box-shadow: 0 5px #666;
+		  transform: translateY(4px);
+		}	   
+		
+		.img {
+			  border: 1px solid #ddd; /* Gray border */
+			  border-radius: 4px;  /* Rounded border */
+			  padding: 5px; /* Some padding */
+			  width: 150px; /* Set a small width */
+			}
+		
+		.img:hover {
+ 			  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+ 			  animation: shake 0.5s; 
+ 			  animation-iteration-count: infinite; 
+		}
+		
+		@keyframes shake {
+			  0% { transform: translate(1px, 1px) rotate(0deg); }
+			  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+			  20% { transform: translate(-3px, 0px) rotate(1deg); }
+			  30% { transform: translate(3px, 2px) rotate(0deg); }
+			  40% { transform: translate(1px, -1px) rotate(1deg); }
+			  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+			  60% { transform: translate(-3px, 1px) rotate(0deg); }
+			  70% { transform: translate(3px, 1px) rotate(-1deg); }
+			  80% { transform: translate(-1px, -1px) rotate(1deg); }
+			  90% { transform: translate(1px, 2px) rotate(0deg); }
+			  100% { transform: translate(1px, -2px) rotate(-1deg); }
+			}
+		
+		.img:active {
+				transform: translateY(10px);
+			}
+			   
+	</style>
+
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript" src="js/htmlescaping.js"></script>
+		<script type="text/javascript"><!--
+
+	    $(document).ready(
+	    	function () {
+	    		$.ajax(
+				  {
+					  url: "rest/imagej",
+					  dataType: "json",
+					  success: function(data) {
+							var tags = data;
+							var html = "";
+							if(tags.length == 0) {
+								html = "No results..."
+							} else {
+								for(var i = 0; i < tags.length; i++) {
+									html += "<button class='tag' onclick='findThumbnails(\"" 
+											+ tags[i] + "\")'>" + tags[i] + "</button> &nbsp;";
+								}
+							}
+							$("#tag").html(html);
+					  }
+				  }
+				);
+		  	}
+	    )
+		
+		function findThumbnails(tag) {
+			$.ajax(
+				{
+					url: "rest/imagej/" + tag,
+					dataType: "json",
+					success: function(data) {
+						var thumbnails = data;
+						var html = "<br><hr><br>";
+						if(thumbnails.length == 0) {
+							html = "No results..."
+						} else {
+							for(var i = 0; i < thumbnails.length; i++) {
+								html += "<img class='img' src='servlet/imagedisplayer?path=" + thumbnails[i].path
+								+ "&size=small' onclick='findImage(\"" + thumbnails[i].path + "\")'>";
+							}
+						}
+						document.getElementById('image').style.visibility = 'hidden';
+						$("#thumbnail").html(html);
+					}
+				}
+			);
+		}
+		
+		function findImage(path) {
+			$.ajax(
+				{
+					url: "rest/imagej/images/" + path,
+					dataType: "json",
+					success: function(data) {
+						var image = data;
+						var html = "<br><hr><br>";
+						if(image == null) {
+							html = "No results..."
+						} else {
+							html += "<h1>" + image.name + "</h1>" + "<h2>" + image.tags + "</h2>"
+								+ "<img src='servlet/imagedisplayer?path=" + image.path
+								+ "&size=large'>";
+						}
+						document.getElementById('image').style.visibility = 'visible';
+						$("#image").html(html);
+					}
+				}
+			);
+		}
+		
+		//--></script>
+
+</head>
+<body>
+	<h1>Image gallery</h1>
+	<br><hr><br>
+	<div id="tag">&nbsp;</div>
+	<div id="thumbnail">&nbsp;</div>
+	<div id="image">&nbsp;</div>
+</body>
+</html>
